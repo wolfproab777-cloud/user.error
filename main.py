@@ -1,9 +1,8 @@
 import os
-from flask import Flask, render_template_string
+from Flask import Flask, render_template_string
 
 app = Flask(__name__)
 
-# Barcha dahshatli effektlar jamlangan tayyor HTML/CSS va JS kodi
 HORROR_HTML = """
 <!DOCTYPE html>
 <html lang="uz">
@@ -11,7 +10,6 @@ HORROR_HTML = """
     <meta charset="UTF-8">
     <title>Qorong'ulik Seni Kutmoqda...</title>
     <style>
-        /* CRT Eski Televizor va Miltillash effekti */
         body {
             background-color: #030303;
             color: #ff1a1a;
@@ -32,7 +30,6 @@ HORROR_HTML = """
             100% { opacity: 0.85; }
         }
 
-        /* Monitor chiziqlari effekti */
         body::after {
             content: " ";
             display: block;
@@ -62,69 +59,74 @@ HORROR_HTML = """
             letter-spacing: 2px;
         }
 
-        .typewriter {
+        p {
             font-size: 1.2rem;
             color: #a6a6a6;
-            border-right: 2px solid #ff1a1a;
-            white-space: nowrap;
-            overflow: hidden;
-            margin: 0 auto;
-            animation: blink-caret 0.75s step-end infinite;
-        }
-
-        @keyframes blink-caret {
-            from, to { border-color: transparent }
-            50% { border-color: #ff1a1a; }
+            margin-bottom: 30px;
         }
 
         .warning {
             color: #ff4d4d;
             font-weight: bold;
-            margin-top: 30px;
-            font-size: 1.1rem;
+            margin-top: 20px;
+            font-size: 1rem;
             text-transform: uppercase;
-            letter-spacing: 1px;
         }
 
-        .pulse {
-            animation: pulse-glow 2s infinite;
+        /* Kirish tugmasi */
+        .horror-btn {
+            background-color: #5c0000;
+            color: #ff1a1a;
+            border: 2px solid #ff1a1a;
+            padding: 12px 30px;
+            font-size: 1.2rem;
+            font-family: 'Courier New', Courier, monospace;
+            cursor: pointer;
+            border-radius: 5px;
+            box-shadow: 0 0 15px rgba(255, 0, 0, 0.5);
+            transition: 0.3s;
         }
 
-        @keyframes pulse-glow {
-            0% { text-shadow: 0 0 5px #ff0000; }
-            50% { text-shadow: 0 0 25px #ff0000, 0 0 10px #ff3333; }
-            100% { text-shadow: 0 0 5px #ff0000; }
+        .horror-btn:hover {
+            background-color: #ff1a1a;
+            color: #030303;
+            box-shadow: 0 0 25px #ff1a1a;
+        }
+
+        .hidden {
+            display: none;
         }
     </style>
 </head>
 <body>
 
-    <!-- Fon uchun qo'rqinchili muhit musiqasi / ambient ovoz -->
-    <audio autoplay loop>
+    <!-- Fon ovozi uchun audio element -->
+    <audio id="creepy-audio" loop>
         <source src="https://actions.google.com/sounds/v1/ambiences/creepy_wind.ogg" type="audio/ogg">
     </audio>
 
-    <div class="container">
-        <h1 class="pulse">OGOHLANTIRISH</h1>
-        <p class="typewriter" id="typing-text">Siz bu eshikni ochmasligingiz kerak edi...</p>
-        <div class="warning">⚠️ Orqaga qaytish uchun juda kech. Ular seni ko'rib turibdi.</div>
+    <div class="container" id="welcome-screen">
+        <h1>DIQQAT!</h1>
+        <p>Bu sahifa kuchli psixologik muhitga ega.<br>Davom etish uchun yuragingiz sust emasligiga ishonch hosil qiling.</p>
+        <button class="horror-btn" onclick="startExperience()">KIRISH</button>
+    </div>
+
+    <div class="container hidden" id="main-screen">
+        <h1 style="text-shadow: 0 0 20px #ff0000;">SEN TUZAKDASAN</h1>
+        <p>Qorong'ulik allaqachon ortingizda turgandek tuyulmayaptimi?..</p>
+        <div class="warning">⚠️ Orqaga yo'l yo'q. Qochib qutula olmaysiz.</div>
     </div>
 
     <script>
-        // Yozuv effekti uchun matnni sekin chiqarish
-        const textElement = document.getElementById("typing-text");
-        const originalText = textElement.innerHTML;
-        textElement.innerHTML = "";
-        
-        let i = 0;
-        function typeWriter() {
-            if (i < originalText.length) {
-                textElement.innerHTML += originalText.charAt(i);
-                i++;
-                setTimeout(typeWriter, 80);
-            }
+        function startExperience() {
+            // Ovozni yoqish
+            var audio = document.getElementById("creepy-audio");
+            audio.play().catch(error => console.log("Audio o'ynashda xatolik:", error));
+
+            // Ekranlarni almashtirish
+            document.getElementById("welcome-screen").classList.add("hidden");
+            document.getElementById("main-screen").classList.remove("hidden");
         }
-        setTimeout(typeWriter, 1000);
     </script>
 </body>
 </html>
