@@ -56,7 +56,6 @@ HORROR_HTML = """
             font-size: 2.8rem;
             text-shadow: 0 0 15px #ff0000;
             margin-bottom: 20px;
-            letter-spacing: 2px;
         }
 
         p {
@@ -65,15 +64,6 @@ HORROR_HTML = """
             margin-bottom: 30px;
         }
 
-        .warning {
-            color: #ff4d4d;
-            font-weight: bold;
-            margin-top: 20px;
-            font-size: 1rem;
-            text-transform: uppercase;
-        }
-
-        /* Kirish tugmasi */
         .horror-btn {
             background-color: #5c0000;
             color: #ff1a1a;
@@ -100,30 +90,37 @@ HORROR_HTML = """
 </head>
 <body>
 
-    <!-- Fon ovozi uchun audio element -->
-    <audio id="creepy-audio" loop>
+    <!-- Ovoz uchun to'g'ridan-to'g'ri ishlaydigan audio manba -->
+    <audio id="creepy-audio" preload="auto">
         <source src="https://actions.google.com/sounds/v1/ambiences/creepy_wind.ogg" type="audio/ogg">
     </audio>
 
     <div class="container" id="welcome-screen">
         <h1>DIQQAT!</h1>
-        <p>Bu sahifa kuchli psixologik muhitga ega.<br>Davom etish uchun yuragingiz sust emasligiga ishonch hosil qiling.</p>
-        <button class="horror-btn" onclick="startExperience()">KIRISH</button>
+        <p>Atmosferani to'liq his qilish uchun quyidagi tugmani bosing.</p>
+        <button class="horror-btn" onclick="startExperience()">OVOZ BILAN KIRISH</button>
     </div>
 
     <div class="container hidden" id="main-screen">
-        <h1 style="text-shadow: 0 0 20px #ff0000;">SEN TUZAKDASAN</h1>
-        <p>Qorong'ulik allaqachon ortingizda turgandek tuyulmayaptimi?..</p>
-        <div class="warning">⚠️ Orqaga yo'l yo'q. Qochib qutula olmaysiz.</div>
+        <h1>SEN TUZAKDASAN</h1>
+        <p>Qorong'ulik allaqachon ortingizda...</p>
     </div>
 
     <script>
         function startExperience() {
-            // Ovozni yoqish
             var audio = document.getElementById("creepy-audio");
-            audio.play().catch(error => console.log("Audio o'ynashda xatolik:", error));
+            audio.volume = 1.0;
+            
+            // Ovozni majburiy ijro etish
+            var playPromise = audio.play();
+            if (playPromise !== undefined) {
+                playPromise.then(_ => {
+                    // Ovoz muvaffaqiyatli ketdi
+                }).catch(error => {
+                    console.log("Bloklandi:", error);
+                });
+            }
 
-            // Ekranlarni almashtirish
             document.getElementById("welcome-screen").classList.add("hidden");
             document.getElementById("main-screen").classList.remove("hidden");
         }
