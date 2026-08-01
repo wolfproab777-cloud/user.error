@@ -1,5 +1,5 @@
 import os
-from Flask import Flask, render_template_string
+from flask import Flask, render_template_string
 
 app = Flask(__name__)
 
