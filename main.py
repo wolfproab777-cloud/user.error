@@ -1,5 +1,5 @@
 import os
-from flask import Flask, render_template_string, request
+from flask import Flask, render_template_string
 
 app = Flask(__name__)
 
@@ -148,14 +148,36 @@ HORROR_HTML = """
             object-fit: cover;
         }
 
-        .ip-box {
-            background: #110000;
-            border: 1px dashed #ff0000;
-            padding: 15px;
-            margin-top: 20px;
-            font-size: 0.9rem;
-            color: #ff4d4d;
+        /* 3 ta eshik dizayni */
+        .doors-container {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 30px;
+            gap: 15px;
+        }
+
+        .door {
+            background: #1a0000;
+            border: 2px solid #ff0000;
+            padding: 25px 15px;
             text-align: center;
+            border-radius: 8px;
+            cursor: pointer;
+            flex: 1;
+            transition: 0.3s;
+            box-shadow: 0 0 10px rgba(255, 0, 0, 0.2);
+        }
+
+        .door:hover {
+            background: #4d0000;
+            box-shadow: 0 0 20px #ff0000;
+            transform: scale(1.05);
+        }
+
+        .door h3 {
+            margin: 0;
+            color: #ff4d4d;
+            font-size: 1.2rem;
         }
     </style>
 </head>
@@ -193,18 +215,27 @@ HORROR_HTML = """
         <button class="horror-btn" id="boldi-btn" onclick="enterMenu()">BO'LDI</button>
     </div>
 
-    <!-- 2. ASOSIY MENYU EKRANI (IP va Ma'lumotlar bilan) -->
+    <!-- 2. ASOSIY MENYU EKRANI (3 ta eshik bilan) -->
     <div class="container hidden" id="main-menu" style="text-align: center;">
-        <h1 style="text-shadow: 0 0 20px #ff0000;">XUSH KELIBSIZ, QORQMAS</h1>
-        <p style="color: #a6a6a6; font-size: 1.1rem;">Qorong'ulik allaqachon ortingizda turibdi. Biz seni qayerdaligingizni bilamiz...</p>
+        <h1 style="text-shadow: 0 0 20px #ff0000;">TAQDIRINGIZNI TANLANG</h1>
+        <p style="color: #a6a6a6; font-size: 1rem;">Oldingizda 3 ta eshik turibdi. Ulardan birini tanlang, lekin ehtiyot bo'ling...</p>
         
-        <div class="ip-box">
-            Sizning IP manzilingiz: <b>{{ client_ip }}</b><br>
-            Qurilma / Brauzer: <b>{{ user_agent }}</b><br>
-            <span style="color: #fff; font-weight: bold;">Holat: Kuzatuv ostidasiz...</span>
+        <div class="doors-container">
+            <div class="door" onclick="chooseDoor(1)">
+                <h3>1-ESHIK</h3>
+                <p style="font-size:0.8rem; color:#888;">Noma'lum...</p>
+            </div>
+            <div class="door" onclick="chooseDoor(2)">
+                <h3>2-ESHIK</h3>
+                <p style="font-size:0.8rem; color:#888;">Qorong'u...</p>
+            </div>
+            <div class="door" onclick="chooseDoor(3)">
+                <h3>3-ESHIK</h3>
+                <p style="font-size:0.8rem; color:#888;">Oxirgi...</p>
+            </div>
         </div>
 
-        <div style="font-size: 0.8rem; color: #550000; margin-top: 20px;">Status: Online & Connected</div>
+        <div style="font-size: 0.8rem; color: #550000; margin-top: 30px;">Status: Trap Activated</div>
     </div>
 
     <script>
@@ -236,8 +267,14 @@ HORROR_HTML = """
             experienceStarted = true;
             document.getElementById("warning-screen").classList.add("hidden");
             document.getElementById("main-menu").classList.remove("hidden");
+        }
 
-            setTimeout(triggerScreamer, 7000);
+        // Eshiklardan birini tanlaganda screamer chiqishi
+        function chooseDoor(doorNumber) {
+            triggerScreamer();
+            setTimeout(() => {
+                alert("Siz " + doorNumber + "-eshikni tanladingiz va tuzakka tushdingiz!");
+            }, 500);
         }
 
         document.addEventListener('mousemove', function(e) {
@@ -261,7 +298,7 @@ HORROR_HTML = """
             screamer.style.opacity = "1";
             setTimeout(() => {
                 screamer.style.opacity = "0";
-            }, 400);
+            }, 600);
         }
     </script>
 </body>
@@ -270,10 +307,7 @@ HORROR_HTML = """
 
 @app.route('/')
 def horror_page():
-    # Foydalanuvchining IP manzili va brauzer ma'lumotlarini aniqlash
-    client_ip = request.headers.get('X-Forwarded-For', request.remote_addr)
-    user_agent = request.user_agent.string
-    return render_template_string(HORROR_HTML, client_ip=client_ip, user_agent=user_agent)
+    return render_template_string(HORROR_HTML)
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
