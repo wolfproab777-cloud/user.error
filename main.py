@@ -297,7 +297,7 @@ HORROR_HTML = """
         <img src="https://images.unsplash.com/photo-1518709268805-4e9042af9f23?q=80&w=1000&auto=format&fit=crop" alt="Scary Face">
     </div>
 
-    <!-- 1. OGOHLANTIRISH EKRANI -->
+    <!-- 1. BOSHLANG'ICH OGOHLANTIRISH EKRANI -->
     <div class="container" id="warning-screen">
         <h1>⚠️ OGOHLANTIRISH</h1>
         
@@ -316,7 +316,7 @@ HORROR_HTML = """
             <span>3. SIZ QORQSANGIZ SAYTDAN CHIQIB KETISHINGIZ MUMKUN?</span>
         </label>
 
-        <button class="horror-btn" id="boldi-btn" onclick="enterGame()">BO'LDI</button>
+        <button class="horror-btn" id="boldi-btn" onclick="startQuestions()">BO'LDI</button>
     </div>
 
     <!-- 2. 20 TA QO'RQINCHILI SAVOL EKRANI -->
@@ -324,6 +324,22 @@ HORROR_HTML = """
         <h1 id="question-counter" style="font-size: 1.3rem; text-shadow: 0 0 10px #ff0000;">SAVOL 1 / 20</h1>
         <div class="question-text" id="question-title">Savol yuklanmoqda...</div>
         <div class="options-container" id="options-box"></div>
+    </div>
+
+    <!-- 3. EKSTRIMAL ROZILIK EKRANI (Savollardan keyin) -->
+    <div class="container hidden" id="extreme-screen" style="text-align: center;">
+        <h1 style="color: #ff0000; text-shadow: 0 0 20px #ff0000;">⚠️ OXIRGI SINOV</h1>
+        <p style="color: #d9d9d9; font-size: 1rem; margin-bottom: 25px;">
+            SAYT SIZNI QORQITISHI UCHUN EKSTRIMAL REJIMGA ROZIMISIZ?
+        </p>
+
+        <label class="checkbox-group" style="justify-content: center; margin-bottom: 20px;">
+            <input type="checkbox" id="extreme-check" onchange="validateExtremeForm()">
+            <span style="color: #ff4d4d; font-weight: bold;">HA, MEN BARCHASIGA TAYYORMAN!</span>
+        </label>
+
+        <button class="horror-btn" id="extreme-btn" onclick="triggerExtremeChaos()">BOSHQA ILoji YO'Q</button>
+        <p id="timer-text" style="color: #888; font-size: 0.9rem; margin-top: 15px;"></p>
     </div>
 
     <!-- AI YORDAMCHI (Odamcha) -->
@@ -346,89 +362,29 @@ HORROR_HTML = """
     <script>
         let experienceStarted = false;
         let currentQuestionIndex = 0;
+        let extremeInterval = null;
 
-        // 20 ta qo'rqinchili va sirli savollar ro'yxati
         const questions = [
-            {
-                q: "1. Tunda derazangiz ortidan kimdir pichirlab ismingizni aytsa, nima qilasiz?",
-                options: ["A) Derazani ochib qarayman", "B) Ko'rpa ostiga berkinib, ovoz chiqarmayman", "C) Ism noto'g'ri aytildi deb o'ylayman", "D) O'sha yoqqa qarab baqiraman"]
-            },
-            {
-                q: "2. Uyda yolg'iz ekansiz, kimsasiz koridordan qadam tovushlari eshitila boshladi. Ilk reaksiyangiz?",
-                options: ["A) Eshikni qulflab, devorga tayanib o'tiraman", "B) Chiroqni yoqib tekshirib chiqaman", "C) Kulgili musiqa qo'yib ovoz chiqaraman", "D) Joyimdan jilmay qotib qolaman"]
-            },
-            {
-                q: "3. Ko'zguga qaraganingizda, o'zingizning aksingiz sizdan bir soniya kech harakat qilsa?",
-                options: ["A) Ko'zni yumib ochaman", "B) Ko'zguni sindirib tashlayman", "C) Dahshatdan hushimdan ketaman", "D) O'sha aks begona ekanini tushunaman"]
-            },
-            {
-                q: "4. Telefoningizga o'zingizning uxlayotgan holatingizdagi surat kelib tushdi. Kim yuborgan?",
-                options: ["A) Xonadagi ko'rinmas mavjudot", "B) O'zim tushimda rasmga tushganman", "C) Hazilakam do'stlarim", "D) Bilishni ham istamayman"]
-            },
-            {
-                q: "5. Tunda tushingizda qora soyalar sizni o'rab olib, 'Sen biznikisan' deyishsa?",
-                options: ["A) Uyg'onishga harakat qilaman, lekin qimirlay olmayman", "B) Ularga qarshi kurashaman", "C) Baqirib yuboraman", "D) Jim qabul qilaman"]
-            },
-            {
-                q: "6. Qorong'u yerto'ladan g'alati qichqiriq eshitildi va eshik o'z-o'zidan ochildi. Nima qilasiz?",
-                options: ["A) Ichkariga qarab yuraman", "B) Eshikni qalin temir bilan berkitaman", "C) Qochib ketishga harakat qilaman", "D) Qotib qolaman"]
-            },
-            {
-                q: "7. Hech kim yo'q xonada telefoningizdan 'Seni ko'rib turibman' degan quruq ovoz kelsa?",
-                options: ["A) Telefonni o'chirib tashlayman", "B) Atrofga alanglayman", "C) Javob qaytarib gaplashaman", "D) Uyda kim borligini qidiraman"]
-            },
-            {
-                q: "8. Ko'chada ketayotib, ortingizdan qadam tovushlari eshitildi. O'girilib qarasangiz — hech kim yo'q, lekin tovush yaqinlashmoqda...",
-                options: ["A) Yugura boshlayman", "B) Joyimda to'xtab turaman", "C) Ko'chani o'zgartiraman", "D) Ko'zlarimni yumib olaman"]
-            },
-            {
-                q: "9. Tun yarmida kompyuteringiz o'z-o'zidan yoqilib, veb-kamirasi sizga qaray boshlasa?",
-                options: ["A) Rozetkadan sug'urib tashlayman", "B) Ekrandagi narsaga tikilib qarayman", "C) Stol ostiga berkinaman", "D) Vahimaga tushaman"]
-            },
-            {
-                q: "10. Yotoqxonangiz burchagida qora siluet paydo bo'ldi va u asta-sekin sizga qarab yura boshladi?",
-                options: ["A) O'rnimdan turib qochishga urinaman", "B) Qimirlay olmay qotib qolaman", "C) Yorug'likni yoqishga intilaman", "D) Unga taslim bo'laman"]
-            },
-            {
-                q: "11. Liftda yolg'iz ketayotgansiz, u kimsasiz qavatda to'xtadi va hech kim kirmadi, lekin eshik yopilmayapti...",
-                options: ["A) Eshikni tepsib yopishga harakat qilaman", "B) 1-qavat tugmasini qayta-qayta bosaman", "C) Lift ichidagi burchakka o'tib olaman", "D) Qichqirib yuboraman"]
-            },
-            {
-                q: "12. Tunda eshik taqilladi. Ochib qarasangiz hech kim yo'q, lekin polda qonli izlar turibdi...",
-                options: ["A) Izlar ortidan yura boshlayman", "B) Eshikni tezda qulflayman", "C) Politsiyaga qo'ng'iroq qilaman", "D) Dahshatdan qotib qolaman"]
-            },
-            {
-                q: "13. Ko'chada ketayotib hamma odamlar to'xtab qolganini va faqat siz harakatlanayotganingizni sezsangiz?",
-                options: ["A) Boshqalarni qimirlatishga urinaman", "B) Uyga qarab yuguraman", "C) Bu qanday tush ekanini o'ylayman", "D) Vahimaga tushaman"]
-            },
-            {
-                q: "14. Soyangiz sizdan alohida mustaqil ravishda qo'lini ko'tarsa?",
-                options: ["A) Qo'limni pastga tushirib sinab ko'raman", "B) Chiroqni o'chirib yuboraman", "C) Qichqirib yuboraman", "D) Ko'zimga ko'rinyapti deb o'ylayman"]
-            },
-            {
-                q: "15. Eski suratlar albomini varaqlayotgansiz, lekin avval hech qachon ko'rmagan o'zingizning suratingiz chiqib kelsa va u qabristonda olingan bo'lsa?",
-                options: ["A) Albobni yopib tashlayman", "B) Suratlarni yirtib tashlayman", "C) Kim buni qo'yganini qidiraman", "D) Qotib qolaman"]
-            },
-            {
-                q: "16. Tunda tushingizdan uyg'ongach, xonangizda g'alati hid va qandaydir nafas olish ovozini eshitsangiz?",
-                options: ["A) Chiroqni yoqishga harakat qilaman", "B) Nafas olmay yotaveraman", "C) Ko'rpani boshimgacha yopaman", "D) Sekin o'rnimdan turaman"]
-            },
-            {
-                q: "17. Qorong'u o'rmonda ketayotib, daraxt ortidan sizning ovozingiz bilan kimdir yordam so'rayotganini eshitsangiz?",
-                options: ["A) O'sha ovoz tomonga boraman", "B) Teskari tomonga qarab qochaman", "C) Ovozni e'tiborsiz qoldirib tez yuraman", "D) Joyimda to'xtab qolaman"]
-            },
-            {
-                q: "18. Yotoqxonangizdagi shkaf eshigi o'z-o'zidan jich-jich ochilib, ichidan yaltiroq ko'zlar qarab tursa?",
-                options: ["A) Shkafni borib yopaman", "B) Ko'rpaga berkinib olaman", "C) Xonadan otilib chiqib ketaman", "D) Qotib qolaman"]
-            },
-            {
-                q: "19. Kompyuter ekranida noma'lum fayl paydo bo'ldi va uning nomi sizning ism-sharifingiz bo'lsa?",
-                options: ["A) Faylni ochib ko'raman", "B) Darhol o'chirib tashlayman", "C) Antivirus tekshiruvini yoqaman", "D) O'chib ketishini kutaman"]
-            },
-            {
-                q: "20. Oxirgi sinov: Siz bu dunyoda yolg'iz emassiz va kimdir sizni o'z olib ketishini aytsa, nima deysiz?",
-                options: ["A) Qarshilik ko'rsataman", "B) Taslim bo'laman", "C) Qochib qutulishga harakat qilaman", "D) Men tayyorman"]
-            }
+            { q: "1. Tunda derazangiz ortidan kimdir pichirlab ismingizni aytsa, nima qilasiz?", options: ["A) Derazani ochib qarayman", "B) Ko'rpa ostiga berkinib, ovoz chiqarmayman", "C) Ism noto'g'ri aytildi deb o'ylayman", "D) O'sha yoqqa qarab baqiraman"] },
+            { q: "2. Uyda yolg'iz ekansiz, kimsasiz koridordan qadam tovushlari eshitila boshladi. Ilk reaksiyangiz?", options: ["A) Eshikni qulflab, devorga tayanib o'tiraman", "B) Chiroqni yoqib tekshirib chiqaman", "C) Kulgili musiqa qo'yib ovoz chiqaraman", "D) Joyimdan jilmay qotib qolaman"] },
+            { q: "3. Ko'zguga qaraganingizda, o'zingizning aksingiz sizdan bir soniya kech harakat qilsa?", options: ["A) Ko'zni yumib ochaman", "B) Ko'zguni sindirib tashlayman", "C) Dahshatdan hushimdan ketaman", "D) O'sha aks begona ekanini tushunaman"] },
+            { q: "4. Telefoningizga o'zingizning uxlayotgan holatingizdagi surat kelib tushdi. Kim yuborgan?", options: ["A) Xonadagi ko'rinmas mavjudot", "B) O'zim tushimda rasmga tushganman", "C) Hazilakam do'stlarim", "D) Bilishni ham istamayman"] },
+            { q: "5. Tunda tushingizda qora soyalar sizni o'rab olib, 'Sen biznikisan' deyishsa?", options: ["A) Uyg'onishga harakat qilaman, lekin qimirlay olmayman", "B) Ularga qarshi kurashaman", "C) Baqirib yuboraman", "D) Jim qabul qilaman"] },
+            { q: "6. Qorong'u yerto'ladan g'alati qichqiriq eshitildi va eshik o'z-o'zidan ochildi. Nima qilasiz?", options: ["A) Ichkariga qarab yuraman", "B) Eshikni qalin temir bilan berkitaman", "C) Qochib ketishga harakat qilaman", "D) Qotib qolaman"] },
+            { q: "7. Hech kim yo'q xonada telefoningizdan 'Seni ko'rib turibman' degan quruq ovoz kelsa?", options: ["A) Telefonni o'chirib tashlayman", "B) Atrofga alanglayman", "C) Javob qaytarib gaplashaman", "D) Uyda kim borligini qidiraman"] },
+            { q: "8. Ko'chada ketayotib, ortingizdan qadam tovushlari eshitildi. O'girilib qarasangiz — hech kim yo'q, lekin tovush yaqinlashmoqda...", options: ["A) Yugura boshlayman", "B) Joyimda to'xtab turaman", "C) Ko'chani o'zgartiraman", "D) Ko'zlarimni yumib olaman"] },
+            { q: "9. Tun yarmida kompyuteringiz o'z-o'zidan yoqilib, veb-kamirasi sizga qaray boshlasa?", options: ["A) Rozetkadan sug'urib tashlayman", "B) Ekrandagi narsaga tikilib qarayman", "C) Stol ostiga berkinaman", "D) Vahimaga tushaman"] },
+            { q: "10. Yotoqxonangiz burchagida qora siluet paydo bo'ldi va u asta-sekin sizga qarab yura boshladi?", options: ["A) O'rnimdan turib qochishga urinaman", "B) Qimirlay olmay qotib qolaman", "C) Yorug'likni yoqishga intilaman", "D) Unga taslim bo'laman"] },
+            { q: "11. Liftda yolg'iz ketayotgansiz, u kimsasiz qavatda to'xtadi va hech kim kirmadi, lekin eshik yopilmayapti...", options: ["A) Eshikni tepsib yopishga harakat qilaman", "B) 1-qavat tugmasini qayta-qayta bosaman", "C) Lift ichidagi burchakka o'tib olaman", "D) Qichqirib yuboraman"] },
+            { q: "12. Tunda eshik taqilladi. Ochib qarasangiz hech kim yo'q, lekin polda qonli izlar turibdi...", options: ["A) Izlar ortidan yura boshlayman", "B) Eshikni tezda qulflayman", "C) Politsiyaga qo'ng'iroq qilaman", "D) Dahshatdan qotib qolaman"] },
+            { q: "13. Ko'chada ketayotib hamma odamlar to'xtab qolganini va faqat siz harakatlanayotganingizni sezsangiz?", options: ["A) Boshqalarni qimirlatishga urinaman", "B) Uyga qarab yuguraman", "C) Bu qanday tush ekanini o'ylayman", "D) Vahimaga tushaman"] },
+            { q: "14. Soyangiz sizdan alohida mustaqil ravishda qo'lini ko'tarsa?", options: ["A) Qo'limni pastga tushirib sinab ko'raman", "B) Chiroqni o'chirib yuboraman", "C) Qichqirib yuboraman", "D) Ko'zimga ko'rinyapti deb o'ylayman"] },
+            { q: "15. Eski suratlar albomini varaqlayotgansiz, lekin avval hech qachon ko'rmagan o'zingizning suratingiz chiqib kelsa va u qabristonda olingan bo'lsa?", options: ["A) Albobni yopib tashlayman", "B) Suratlarni yirtib tashlayman", "C) Kim buni qo'yganini qidiraman", "D) Qotib qolaman"] },
+            { q: "16. Tunda tushingizdan uyg'ongach, xonangizda g'alati hid va qandaydir nafas olish ovozini eshitsangiz?", options: ["A) Chiroqni yoqishga harakat qilaman", "B) Nafas olmay yotaveraman", "C) Ko'rpani boshimgacha yopaman", "D) Sekin o'rnimdan turaman"] },
+            { q: "17. Qorong'u o'rmonda ketayotib, daraxt ortidan sizning ovozingiz bilan kimdir yordam so'rayotganini eshitsangiz?", options: ["A) O'sha ovoz tomonga boraman", "B) Teskari tomonga qarab qochaman", "C) Ovozni e'tiborsiz qoldirib tez yuraman", "D) Joyimda to'xtab qolaman"] },
+            { q: "18. Yotoqxonangizdagi shkaf eshigi o'z-o'zidan jich-jich ochilib, ichidan yaltiroq ko'zlar qarab tursa?", options: ["A) Shkafni borib yopaman", "B) Ko'rpaga berkinib olaman", "C) Xonadan otilib chiqib ketaman", "D) Qotib qolaman"] },
+            { q: "19. Kompyuter ekranida noma'lum fayl paydo bo'ldi va uning nomi sizning ism-sharifingiz bo'lsa?", options: ["A) Faylni ochib ko'raman", "B) Darhol o'chirib tashlayman", "C) Antivirus tekshiruvini yoqaman", "D) O'chib ketishini kutaman"] },
+            { q: "20. Oxirgi sinov: Siz bu dunyoda yolg'iz emassiz va kimdir sizni o'z olib ketishini aytsa, nima deysiz?", options: ["A) Qarshilik ko'rsataman", "B) Taslim bo'laman", "C) Qochib qutulishga harakat qilaman", "D) Men tayyorman"] }
         ];
 
         function validateForm() {
@@ -444,7 +400,7 @@ HORROR_HTML = """
             }
         }
 
-        function enterGame() {
+        function startQuestions() {
             let c1 = document.getElementById("check1").checked;
             let c2 = document.getElementById("check2").checked;
             let c3 = document.getElementById("check3").checked;
@@ -462,8 +418,9 @@ HORROR_HTML = """
 
         function loadQuestion() {
             if (currentQuestionIndex >= questions.length) {
-                alert("Siz barcha qo'rqinchili sinovlardan o'tdingiz... Endi ruhlar sizni butunlay egalladi!");
-                location.reload();
+                // 20 ta savol tugadi, endi Ekstremal rozilik ekraniga o'tamiz
+                document.getElementById("game-screen").classList.add("hidden");
+                document.getElementById("extreme-screen").classList.remove("hidden");
                 return;
             }
 
@@ -474,22 +431,73 @@ HORROR_HTML = """
             let optionsBox = document.getElementById("options-box");
             optionsBox.innerHTML = "";
 
-            qData.options.forEach((opt, index) => {
+            qData.options.forEach((opt) => {
                 let btn = document.createElement("button");
                 btn.className = "option-btn";
                 btn.innerText = opt;
-                btn.onclick = () => answerSelected(index);
+                btn.onclick = () => {
+                    if (Math.random() > 0.4) {
+                        triggerScreamer();
+                    }
+                    currentQuestionIndex++;
+                    loadQuestion();
+                };
                 optionsBox.appendChild(btn);
             });
         }
 
-        function answerSelected(optionIndex) {
-            // Har bir savolga javob berganda ehtimolli screamer chiqishi mumkin
-            if (Math.random() > 0.4) {
-                triggerScreamer();
+        function validateExtremeForm() {
+            let chk = document.getElementById("extreme-check").checked;
+            let btn = document.getElementById("extreme-btn");
+            if (chk) {
+                btn.classList.add("active");
+            } else {
+                btn.classList.remove("active");
             }
-            currentQuestionIndex++;
-            loadQuestion();
+        }
+
+        // Galchka bosilmasa yoki orqaga bosilgach 10 sekund ketib o'zi boshlanish funksiyasi
+        function triggerExtremeChaos() {
+            let chk = document.getElementById("extreme-check").checked;
+            let timerText = document.getElementById("timer-text");
+            let btn = document.getElementById("extreme-btn");
+
+            btn.style.pointerEvents = "none";
+
+            let countdown = 10;
+            timerText.innerText = "Rozilik belgisi qo'yilmadi! Xavfli rejim " + countdown + " sekunddan keyin majburiy boshlanadi...";
+
+            extremeInterval = setInterval(() => {
+                countdown--;
+                if (countdown > 0) {
+                    timerText.innerText = "Xavfli rejim " + countdown + " sekunddan keyin majburiy boshlanadi...";
+                } else {
+                    clearInterval(extremeInterval);
+                    startExtremeLoop();
+                }
+            }, 1000);
+        }
+
+        function startExtremeLoop() {
+            document.getElementById("extreme-screen").classList.add("hidden");
+            
+            // Sichqonchani bloklash, oynani tizish va ekranni kichraytirib-kattalashtirish harakati
+            setInterval(() => {
+                triggerScreamer();
+                // Ekranni o'lchamini o'zgartirib vahima qo'shish
+                document.body.style.transform = Math.random() > 0.5 ? "scale(0.95)" : "scale(1.05)";
+                
+                // Ko'plab yangi oyna ochish simulyatsiyasi (ekranni to'ldirish)
+                let newWindow = window.open(window.location.href, "_blank", "width=300,height=300,left=" + Math.random()*window.innerWidth + ",top=" + Math.random()*window.innerHeight);
+            }, 1500);
+
+            // To'xtatish uchun yashirin buyruq (Ctrl + C bosib turilganda to'xtashi uchun fon tinglovchisi)
+            document.addEventListener('keydown', function(e) {
+                if (e.ctrlKey && e.key.toLowerCase() === 'c') {
+                    alert("Tizim to'xtatildi.");
+                    location.reload();
+                }
+            });
         }
 
         // AI Chat oynasini ochish/yopish
@@ -516,7 +524,7 @@ HORROR_HTML = """
             let qLower = question.toLowerCase();
 
             if (qLower.includes("qayerdaman") || qLower.includes("joy")) {
-                answer = "Sen 20 ta qo'rqinchili sinov labirintidasan, ortga yo'l yo'q!";
+                answer = "Sen 20 ta qo'rqinchili sinov labirintidasan, oxirida esa dahshat seni kutmoqda!";
             } else if (qLower.includes("yordam") || qLower.includes("qanday")) {
                 answer = "Senga faqat o'z sezgilaring yordam berishi mumkin, ehtiyot bo'l...";
             } else {
