@@ -136,19 +136,19 @@ HORROR_HTML = """
             display: flex;
             justify-content: center;
             align-items: center;
-            z-index: 99999;
+            z-index: 999999;
             opacity: 0;
             pointer-events: none;
-            transition: opacity 0.1s ease-in-out;
+            transition: opacity 0.02s ease-in-out;
         }
 
         #screamer-overlay img {
             width: 100%;
             height: 100%;
             object-fit: cover;
+            filter: contrast(180%) brightness(70%) drop-shadow(0 0 30px red);
         }
 
-        /* 3 ta eshik dizayni */
         .doors-container {
             display: flex;
             justify-content: space-around;
@@ -170,7 +170,7 @@ HORROR_HTML = """
 
         .door:hover {
             background: #4d0000;
-            box-shadow: 0 0 20px #ff0000;
+            box-shadow: 0 0 25px #ff0000;
             transform: scale(1.05);
         }
 
@@ -179,9 +179,110 @@ HORROR_HTML = """
             color: #ff4d4d;
             font-size: 1.2rem;
         }
+
+        /* AI Yordamchi (Kichkina odamcha) dizayni */
+        #ai-assistant {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 70px;
+            height: 70px;
+            background: #330000;
+            border: 2px solid #ff1a1a;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: grab;
+            box-shadow: 0 0 15px #ff0000;
+            z-index: 99999;
+            user-select: none;
+        }
+
+        #ai-assistant:active {
+            cursor: grabbing;
+        }
+
+        #ai-assistant img {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+        }
+
+        /* AI Chat Oynasi */
+        #ai-chat-box {
+            position: fixed;
+            bottom: 100px;
+            right: 20px;
+            width: 300px;
+            background: rgba(10, 0, 0, 0.95);
+            border: 2px solid #ff0000;
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: 0 0 20px rgba(255, 0, 0, 0.5);
+            z-index: 99999;
+            display: none;
+            text-align: left;
+        }
+
+        #ai-chat-box h4 {
+            margin: 0 0 10px 0;
+            color: #ff4d4d;
+            font-size: 1rem;
+            text-align: center;
+        }
+
+        #ai-chat-messages {
+            height: 120px;
+            overflow-y: auto;
+            font-size: 0.85rem;
+            color: #ccc;
+            margin-bottom: 10px;
+            border-bottom: 1px dashed #550000;
+            padding-bottom: 5px;
+        }
+
+        .ai-input-group {
+            display: flex;
+            gap: 5px;
+        }
+
+        .ai-input-group input {
+            flex: 1;
+            background: #030303;
+            border: 1px solid #ff1a1a;
+            color: #fff;
+            padding: 5px;
+            font-size: 0.85rem;
+            border-radius: 3px;
+        }
+
+        .ai-input-group button {
+            background: #5c0000;
+            color: #ff1a1a;
+            border: 1px solid #ff1a1a;
+            padding: 5px 10px;
+            cursor: pointer;
+            border-radius: 3px;
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        @keyframes lightning {
+            0% { background-color: #030303; }
+            2% { background-color: #ffffff; }
+            4% { background-color: #030303; }
+            80% { background-color: #030303; }
+            82% { background-color: #ff0000; }
+            84% { background-color: #030303; }
+            100% { background-color: #030303; }
+        }
+
+        .lightning-effect {
+            animation: lightning 8s infinite;
+        }
     </style>
 </head>
-<body>
+<body class="lightning-effect">
 
     <!-- YouTube orqali fon musiqasi -->
     <div id="youtube-player" style="display:none;">
@@ -190,10 +291,10 @@ HORROR_HTML = """
 
     <!-- Screamer -->
     <div id="screamer-overlay">
-        <img src="https://images.unsplash.com/photo-1509198397868-475647b2a1e5?q=80&w=1000&auto=format&fit=crop" alt="Scary">
+        <img src="https://images.unsplash.com/photo-1518709268805-4e9042af9f23?q=80&w=1000&auto=format&fit=crop" alt="Scary Face">
     </div>
 
-    <!-- 1. OGOHLANTIRISH VA SHARTLAR EKRANI -->
+    <!-- 1. OGOHLANTIRISH EKRANI -->
     <div class="container" id="warning-screen">
         <h1>⚠️ OGOHLANTIRISH</h1>
         
@@ -215,10 +316,10 @@ HORROR_HTML = """
         <button class="horror-btn" id="boldi-btn" onclick="enterMenu()">BO'LDI</button>
     </div>
 
-    <!-- 2. ASOSIY MENYU EKRANI (3 ta eshik bilan) -->
+    <!-- 2. 3 TA ESHIK EKRANI -->
     <div class="container hidden" id="main-menu" style="text-align: center;">
-        <h1 style="text-shadow: 0 0 20px #ff0000;">TAQDIRINGIZNI TANLANG</h1>
-        <p style="color: #a6a6a6; font-size: 1rem;">Oldingizda 3 ta eshik turibdi. Ulardan birini tanlang, lekin ehtiyot bo'ling...</p>
+        <h1 style="text-shadow: 0 0 20px #ff0000;">TAQDIRINGIZni TANLANG</h1>
+        <p style="color: #a6a6a6; font-size: 1rem;">Oldingizda 3 ta eshik turibdi. Ulardan birini tanlang...</p>
         
         <div class="doors-container">
             <div class="door" onclick="chooseDoor(1)">
@@ -236,6 +337,23 @@ HORROR_HTML = """
         </div>
 
         <div style="font-size: 0.8rem; color: #550000; margin-top: 30px;">Status: Trap Activated</div>
+    </div>
+
+    <!-- AI YORDAMCHI (Odamcha) -->
+    <div id="ai-assistant" title="Yordamchi AI" onclick="toggleAiChat()">
+        <img src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=200&auto=format&fit=crop" alt="AI">
+    </div>
+
+    <!-- AI Chat Oynasi -->
+    <div id="ai-chat-box">
+        <h4>💀 Qorong'u Yordamchi</h4>
+        <div id="ai-chat-messages">
+            Salom! Men sening yordamchingman. Qo'rqinchili savollaringni ber, javob beraman...
+        </div>
+        <div class="ai-input-group">
+            <input type="text" id="ai-user-input" placeholder="Savol berish...">
+            <button onclick="askAi()">Berish</button>
+        </div>
     </div>
 
     <script>
@@ -269,28 +387,86 @@ HORROR_HTML = """
             document.getElementById("main-menu").classList.remove("hidden");
         }
 
-        // Eshiklardan birini tanlaganda screamer chiqishi
         function chooseDoor(doorNumber) {
             triggerScreamer();
-            setTimeout(() => {
-                alert("Siz " + doorNumber + "-eshikni tanladingiz va tuzakka tushdingiz!");
-            }, 500);
         }
 
-        document.addEventListener('mousemove', function(e) {
-            if (!experienceStarted) return;
-            
-            if (Math.random() > 0.3) {
+        // AI Chat oynasini ochish/yopish
+        function toggleAiChat() {
+            let chat = document.getElementById("ai-chat-box");
+            if (chat.style.display === "block") {
+                chat.style.display = "none";
+            } else {
+                chat.style.display = "block";
+            }
+        }
+
+        // AI ga savol berish va qorqinchili javoblar qaytarish
+        function askAi() {
+            let inputField = document.getElementById("ai-user-input");
+            let msgBox = document.getElementById("ai-chat-messages");
+            let question = inputField.value.trim();
+
+            if (question === "") return;
+
+            msgBox.innerHTML += "<br><b style='color:#ff4d4d;'>Sen:</b> " + question;
+
+            let answer = "Bu sirni hech kim bilmaydi...";
+            let qLower = question.toLowerCase();
+
+            if (qLower.includes("qayerdaman") || qLower.includes("qayerda")) {
+                answer = "Sen qorong'u tuzakdasan, ortingga yo'l yo'q!";
+            } else {
+                let answers = [
+                    "Men sening fikrlaringni o'qiyapman...",
+                    "Bu savolga javob berish hayotingga tushishi mumkin.",
+                    "Ular seni kuzatib turibdi, ortingga qarama!",
+                    "Qo'rqinchli tushlaring haqida o'yla...",
+                    "Bu yerdan qochib qutula olmaysan."
+                ];
+                answer = answers[Math.floor(Math.random() * answers.length)];
+            }
+
+            setTimeout(() => {
+                msgBox.innerHTML += "<br><b style='color:#ff1a1a;'>Yordamchi:</b> " + answer;
+                msgBox.scrollTop = msgBox.scrollHeight;
+            }, 500);
+
+            inputField.value = "";
+        }
+
+        // Sichqoncha yordamida AI odamchani sudrab yurish (Drag and Drop)
+        let ai = document.getElementById("ai-assistant");
+        let isDragging = false;
+        let offsetX, offsetY;
+
+        ai.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            offsetX = e.clientX - ai.getBoundingClientRect().left;
+            offsetY = e.clientY - ai.getBoundingClientRect().top;
+            ai.style.cursor = "grabbing";
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+            ai.style.left = (e.clientX - offsetX) + 'px';
+            ai.style.top = (e.clientY - offsetY) + 'px';
+            ai.style.bottom = 'auto';
+            ai.style.right = 'auto';
+
+            if (experienceStarted && Math.random() > 0.3) {
                 let drop = document.createElement('div');
                 drop.className = 'blood-drop';
                 drop.style.left = e.pageX + 'px';
                 drop.style.top = e.pageY + 'px';
                 document.body.appendChild(drop);
-
-                setTimeout(() => {
-                    drop.remove();
-                }, 1000);
+                setTimeout(() => drop.remove(), 1000);
             }
+        });
+
+        document.addEventListener('mouseup', () => {
+            isDragging = false;
+            ai.style.cursor = "grab";
         });
 
         function triggerScreamer() {
@@ -298,7 +474,7 @@ HORROR_HTML = """
             screamer.style.opacity = "1";
             setTimeout(() => {
                 screamer.style.opacity = "0";
-            }, 600);
+            }, 1200);
         }
     </script>
 </body>
