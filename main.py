@@ -90,10 +90,10 @@ HORROR_HTML = """
 </head>
 <body>
 
-    <!-- Ovoz uchun to'g'ridan-to'g'ri ishlaydigan audio manba -->
-    <audio id="creepy-audio" preload="auto">
-        <source src="https://actions.google.com/sounds/v1/ambiences/creepy_wind.ogg" type="audio/ogg">
-    </audio>
+    <!-- YouTube orqali ishlaydigan yashirin pleyer (Creepy ambient musiqa) -->
+    <div id="youtube-player" style="display:none;">
+        <iframe width="560" height="315" src="https://www.youtube.com/watch?v=zo1LnvW_XmQ" frameborder="0" allow="autoplay"></iframe>
+    </div>
 
     <div class="container" id="welcome-screen">
         <h1>DIQQAT!</h1>
@@ -108,19 +108,6 @@ HORROR_HTML = """
 
     <script>
         function startExperience() {
-            var audio = document.getElementById("creepy-audio");
-            audio.volume = 1.0;
-            
-            // Ovozni majburiy ijro etish
-            var playPromise = audio.play();
-            if (playPromise !== undefined) {
-                playPromise.then(_ => {
-                    // Ovoz muvaffaqiyatli ketdi
-                }).catch(error => {
-                    console.log("Bloklandi:", error);
-                });
-            }
-
             document.getElementById("welcome-screen").classList.add("hidden");
             document.getElementById("main-screen").classList.remove("hidden");
         }
