@@ -1,5 +1,5 @@
 import os
-from flask import Flask, render_template_string
+from flask import Flask, render_template_string, request
 
 app = Flask(__name__)
 
@@ -112,7 +112,6 @@ HORROR_HTML = """
             display: none !important;
         }
 
-        /* Qon tomchisi effekti */
         .blood-drop {
             position: absolute;
             width: 8px;
@@ -148,6 +147,16 @@ HORROR_HTML = """
             height: 100%;
             object-fit: cover;
         }
+
+        .ip-box {
+            background: #110000;
+            border: 1px dashed #ff0000;
+            padding: 15px;
+            margin-top: 20px;
+            font-size: 0.9rem;
+            color: #ff4d4d;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
@@ -181,25 +190,31 @@ HORROR_HTML = """
             <span>3. SIZ QORQSANGIZ SAYTDAN CHIQIB KETISHINGIZ MUMKUN?</span>
         </label>
 
-        <button class="horror-btn" id="bo'ldi-btn" onclick="enterMenu()">BO'LDI</button>
+        <button class="horror-btn" id="boldi-btn" onclick="enterMenu()">BO'LDI</button>
     </div>
 
-    <!-- 2. ASOSIY MENYU EKRANI -->
+    <!-- 2. ASOSIY MENYU EKRANI (IP va Ma'lumotlar bilan) -->
     <div class="container hidden" id="main-menu" style="text-align: center;">
         <h1 style="text-shadow: 0 0 20px #ff0000;">XUSH KELIBSIZ, QORQMAS</h1>
-        <p style="color: #a6a6a6; font-size: 1.1rem;">Qorong'ulik allaqachon ortingizda turibdi. Ekrandan ko'zingizni uzmang...</p>
+        <p style="color: #a6a6a6; font-size: 1.1rem;">Qorong'ulik allaqachon ortingizda turibdi. Biz seni qayerdaligingizni bilamiz...</p>
+        
+        <div class="ip-box">
+            Sizning IP manzilingiz: <b>{{ client_ip }}</b><br>
+            Qurilma / Brauzer: <b>{{ user_agent }}</b><br>
+            <span style="color: #fff; font-weight: bold;">Holat: Kuzatuv ostidasiz...</span>
+        </div>
+
         <div style="font-size: 0.8rem; color: #550000; margin-top: 20px;">Status: Online & Connected</div>
     </div>
 
     <script>
         let experienceStarted = false;
 
-        // 3 ta galochka bosilganini tekshirish
         function validateForm() {
             let c1 = document.getElementById("check1").checked;
             let c2 = document.getElementById("check2").checked;
             let c3 = document.getElementById("check3").checked;
-            let btn = document.getElementById("bo'ldi-btn");
+            let btn = document.getElementById("boldi-btn");
 
             if (c1 && c2 && c3) {
                 btn.classList.add("active");
@@ -208,7 +223,6 @@ HORROR_HTML = """
             }
         }
 
-        // BO'LDI tugmasi bosilganda menyuga o'tish
         function enterMenu() {
             let c1 = document.getElementById("check1").checked;
             let c2 = document.getElementById("check2").checked;
@@ -223,11 +237,9 @@ HORROR_HTML = """
             document.getElementById("warning-screen").classList.add("hidden");
             document.getElementById("main-menu").classList.remove("hidden");
 
-            // Menyu ochilgandan 7 sekund keyin screamer chiqishi
             setTimeout(triggerScreamer, 7000);
         }
 
-        // Sichqoncha izidan qon tomchisi
         document.addEventListener('mousemove', function(e) {
             if (!experienceStarted) return;
             
@@ -244,7 +256,6 @@ HORROR_HTML = """
             }
         });
 
-        // Screamer
         function triggerScreamer() {
             let screamer = document.getElementById("screamer-overlay");
             screamer.style.opacity = "1";
@@ -259,7 +270,10 @@ HORROR_HTML = """
 
 @app.route('/')
 def horror_page():
-    return render_template_string(HORROR_HTML)
+    # Foydalanuvchining IP manzili va brauzer ma'lumotlarini aniqlash
+    client_ip = request.headers.get('X-Forwarded-For', request.remote_addr)
+    user_agent = request.user_agent.string
+    return render_template_string(HORROR_HTML, client_ip=client_ip, user_agent=user_agent)
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
